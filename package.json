@@ -4,7 +4,8 @@
   "description": "Highway Network Simulator",
   "scripts": {
     "start": "parcel src/index.html -p 4200",
-    "build": "parcel build src/index.html"
+    "build": "parcel build src/index.html",
+    "static-gen": "node map/map2matrix.js"
   },
   "author": "gesucca",
   "dependencies": {

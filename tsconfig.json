@@ -15,14 +15,15 @@
 		"sourceMap": true,
 		"baseUrl": "./src",
 		"paths": {
-		  "~/*": ["./*"]
+		  "~*": ["./src/*"]
 		},
 		"typeRoots": [
 			"node_modules/@types",
 			"node_module/phaser/types"
 		],
 		"types": [
-			"phaser"
+			"phaser",
+			"typings.d.ts"
 		]
 	},
 	"include": [
