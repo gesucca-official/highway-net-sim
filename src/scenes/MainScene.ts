@@ -25,6 +25,11 @@ export default class MainScene extends Phaser.Scene {
         this._setCameraControls();
     }
 
+    update(time: number, delta: number) {
+        super.update(time, delta);
+        this.controls.update(delta);
+    }
+
     private _setCameraControls() {
         this.controls = new Phaser.Cameras.Controls.SmoothedKeyControl({
             camera: this.cameras.main,
@@ -41,12 +46,7 @@ export default class MainScene extends Phaser.Scene {
 
         const xLen = map0[0].length;
         const yLen = map0.length;
-        this.cameras.main.setBounds(0, 0, xLen * MainScene.TILE_RES_PX, yLen * MainScene.TILE_RES_PX)
-    }
-
-    update(time: number, delta: number) {
-        super.update(time, delta);
-        this.controls.update(delta);
+        this.cameras.main.setBounds(0, 0, (xLen -1) * MainScene.TILE_RES_PX, (yLen -1) * MainScene.TILE_RES_PX)
     }
 
 }
