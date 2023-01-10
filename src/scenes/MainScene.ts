@@ -1,19 +1,21 @@
 import Phaser from "phaser";
 import {map0} from "../maps/map0"
 import MapController from "../ctrls/MapController";
+import HudController from "../ctrls/HudController";
 
 export default class MainScene extends Phaser.Scene {
 
-    public static readonly DEBUG = true;
     public static readonly TILE_RES_PX = 50;
 
     private controls;
 
-    private mapController: MapController;
+    private readonly mapController: MapController;
+    private readonly hudController: HudController;
 
     constructor() {
         super('main-scenes');
         this.mapController = new MapController(this);
+        this.hudController = new HudController(this, () => this.mapController.mapObjects, this.mapController);
     }
 
     preload(): void {
@@ -21,8 +23,9 @@ export default class MainScene extends Phaser.Scene {
     }
 
     create(): void {
-        this.mapController.create();
         this._setCameraControls();
+        this.mapController.create();
+        this.hudController.create();
     }
 
     update(time: number, delta: number) {
@@ -46,7 +49,7 @@ export default class MainScene extends Phaser.Scene {
 
         const xLen = map0[0].length;
         const yLen = map0.length;
-        this.cameras.main.setBounds(0, 0, (xLen -1) * MainScene.TILE_RES_PX, (yLen -1) * MainScene.TILE_RES_PX)
+        this.cameras.main.setBounds(0, 0, (xLen - 1) * MainScene.TILE_RES_PX, (yLen - 1) * MainScene.TILE_RES_PX)
     }
 
 }

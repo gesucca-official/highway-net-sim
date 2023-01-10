@@ -4,9 +4,15 @@ import MainScene from "../scenes/MainScene";
 export default class MapController {
 
     private readonly scene: Phaser.Scene;
+    private readonly _mapObjects: Phaser.GameObjects.GameObject[] = [];
+    private readonly _debugObjects: Phaser.GameObjects.GameObject[] = [];
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
+    }
+
+    get mapObjects(): Phaser.GameObjects.GameObject[] {
+        return [...this._mapObjects, ...this._debugObjects];
     }
 
     public preload() {
@@ -28,15 +34,35 @@ export default class MapController {
                     this._createMonoChromeTile(tileIndex, lineIndex, 0xa6acaf);
                 if (tile == '|' || tile == '-' || tile == '<' || tile == '>' || tile == 'x')
                     this._createRiverTile(tileIndex, lineIndex, tile);
-
-                if (MainScene.DEBUG) this._drawDebugReferences(tileIndex, lineIndex);
             })
         })
     }
 
+    public drawDebugReferences() {
+        const res = MainScene.TILE_RES_PX;
+        if (this._debugObjects.length == 0)
+            map0.forEach((line, yIndex) => {
+                line.forEach((tile, xIndex) => {
+                    const r1 = this.scene.add.rectangle(xIndex * res, yIndex * res, res / 100, res, 0x000000);
+                    const r2 = this.scene.add.rectangle(xIndex * res, yIndex * res, res, res / 100, 0x000000);
+                    const t = this.scene.add.bitmapText(xIndex * res, yIndex * res, 'arcade', xIndex + "\n" + yIndex, 8);
+                    this._mapObjects.push(r1, r2, t);
+                    this._debugObjects.push(r1, r2, t);
+                })
+            });
+        else {
+            this._debugObjects.forEach(obj => {
+                obj.destroy(true);
+            });
+            this._debugObjects.splice(0, this._debugObjects.length);
+        }
+    }
+
     private _createMonoChromeTile(xIndex: number, yIndex: number, color: number) {
         const res = MainScene.TILE_RES_PX;
-        this.scene.add.rectangle(xIndex * res, yIndex * res, res, res, color).setOrigin(0, 0);
+        this._mapObjects.push(
+            this.scene.add.rectangle(xIndex * res, yIndex * res, res, res, color).setOrigin(0, 0)
+        );
     }
 
     // TODO: this only draw NW and WS turns, and an intersection from above
@@ -46,45 +72,50 @@ export default class MapController {
         const x = xIndex * res;
         const y = yIndex * res;
         if (orientation == '|' || orientation == '-')
-            this.scene.add.rectangle(
-                orientation == '|' ? x + (res / 2) : x,
-                orientation == '-' ? y + (res / 2) : y,
-                orientation == '|' ? res / 10 : res,
-                orientation == '-' ? res / 10 : res,
-                0x21618c).setOrigin(0, 0);
+            this._mapObjects.push(
+                this.scene.add.rectangle(
+                    orientation == '|' ? x + (res / 2) : x,
+                    orientation == '-' ? y + (res / 2) : y,
+                    orientation == '|' ? res / 10 : res,
+                    orientation == '-' ? res / 10 : res,
+                    0x21618c).setOrigin(0, 0)
+            );
         else if (orientation == '>') {
-            this.scene.add.rectangle(x + (res / 2), y,
-                res / 10,
-                res / 2 + (res / 10),
-                0x21618c).setOrigin(0, 0);
-            this.scene.add.rectangle(x, y + (res / 2),
-                res / 2, // + (res / 10) no need since it would overlaps
-                res / 10,
-                0x21618c).setOrigin(0, 0);
+            this._mapObjects.push(
+                this.scene.add.rectangle(x + (res / 2), y,
+                    res / 10,
+                    res / 2 + (res / 10),
+                    0x21618c).setOrigin(0, 0)
+            );
+            this._mapObjects.push(
+                this.scene.add.rectangle(x, y + (res / 2),
+                    res / 2, // + (res / 10) no need since it would overlaps
+                    res / 10,
+                    0x21618c).setOrigin(0, 0)
+            );
         } else if (orientation == '<') {
-            this.scene.add.rectangle(x + (res / 2), y + (res / 2),
-                res / 2,
-                res / 10,
-                0x21618c).setOrigin(0, 0);
-            this.scene.add.rectangle(x + (res / 2), y + (res / 2),
-                res / 10,
-                res,
-                0x21618c).setOrigin(0, 0);
+            this._mapObjects.push(
+                this.scene.add.rectangle(x + (res / 2), y + (res / 2),
+                    res / 2,
+                    res / 10,
+                    0x21618c).setOrigin(0, 0)
+            );
+            this._mapObjects.push(
+                this.scene.add.rectangle(x + (res / 2), y + (res / 2),
+                    res / 10,
+                    res,
+                    0x21618c).setOrigin(0, 0)
+            );
         } else if (orientation == 'x') {
             // beware, this overlaps another green tile over the base one
             this._createRiverTile(xIndex, yIndex, '-');
-            this.scene.add.rectangle(x + (res / 2), y,
-                res / 10,
-                res / 2,
-                0x21618c).setOrigin(0, 0);
+            this._mapObjects.push(
+                this.scene.add.rectangle(x + (res / 2), y,
+                    res / 10,
+                    res / 2,
+                    0x21618c).setOrigin(0, 0)
+            );
         }
-    }
-
-    private _drawDebugReferences(xIndex: number, yIndex: number) {
-        const res = MainScene.TILE_RES_PX;
-        this.scene.add.rectangle(xIndex * res, yIndex * res, res / 100, res, 0x000000);
-        this.scene.add.rectangle(xIndex * res, yIndex * res, res, res / 100, 0x000000);
-        this.scene.add.bitmapText(xIndex * res, yIndex * res, 'arcade', xIndex + "\n" + yIndex, 8);
     }
 
 }
