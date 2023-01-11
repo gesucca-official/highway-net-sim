@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import {map0} from "../maps/map0"
 import MapController from "../ctrls/MapController";
 import HudController from "../ctrls/HudController";
+import HighwayNetController from "../ctrls/HighwayNetController";
 
 export default class MainScene extends Phaser.Scene {
 
@@ -11,11 +12,16 @@ export default class MainScene extends Phaser.Scene {
 
     private readonly mapController: MapController;
     private readonly hudController: HudController;
+    private readonly highwayNetController: HighwayNetController;
 
     constructor() {
         super('main-scenes');
         this.mapController = new MapController(this);
-        this.hudController = new HudController(this, () => this.mapController.mapObjects, this.mapController);
+        this.highwayNetController = new HighwayNetController(this);
+        this.hudController = new HudController(this,
+            () => [...this.mapController.mapObjects, ...this.highwayNetController.highwayNetworkGraphicObjs],
+            this.mapController,
+            this.highwayNetController);
     }
 
     preload(): void {
