@@ -1,6 +1,7 @@
 import HighwayTile from "../models/HighwayTile";
 import {CardinalDirection} from "../models/CardinalDirection";
 import MainScene from "../scenes/MainScene";
+import {getCookie, setCookie} from "../utils/Cookies";
 
 export default class HighwayNetController {
 
@@ -9,6 +10,9 @@ export default class HighwayNetController {
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
+        const cookie = getCookie('hn');
+        if (cookie)
+            this._highwayNetwork = JSON.parse(cookie);
     }
 
     get highwayNetwork(): HighwayTile[] {
@@ -22,6 +26,10 @@ export default class HighwayNetController {
                 res.push(...h.graphicObj);
         });
         return res;
+    }
+
+    public create() {
+        this.draw(); // draw highway net taken from cookies
     }
 
     public add(x: number, y: number, dir: CardinalDirection[]) {
@@ -43,6 +51,7 @@ export default class HighwayNetController {
             }
         });
         toBeDeleted.forEach(tbd => delete this._highwayNetwork[tbd]);
+        this._saveHighwayNet();
     }
 
     public draw() {
@@ -79,5 +88,16 @@ export default class HighwayNetController {
                 });
             }
         });
+        this._saveHighwayNet()
+    }
+
+    private _saveHighwayNet() {
+        const bakedHighwayNet: HighwayTile[] = [];
+        this._highwayNetwork.forEach(h => {
+            const hh = JSON.parse(JSON.stringify(h)); // sorta deep clone
+            hh.graphicObj = [];
+            bakedHighwayNet.push(hh);
+        })
+        setCookie('hn', JSON.stringify(bakedHighwayNet));
     }
 }

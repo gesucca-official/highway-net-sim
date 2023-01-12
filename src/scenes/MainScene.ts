@@ -31,6 +31,7 @@ export default class MainScene extends Phaser.Scene {
     create(): void {
         this._setCameraControls();
         this.mapController.create();
+        this.highwayNetController.create();
         this.hudController.create();
     }
 

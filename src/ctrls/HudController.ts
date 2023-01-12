@@ -53,10 +53,10 @@ export default class HudController {
                 .setInteractive()
                 .on('pointerup', () => this._drawRoadButtonPressed([CardinalDirection.S, CardinalDirection.E])),
             this.scene.add.text(515, 575, 'NE'),
-            this.scene.add.rectangle(580, 575, 40, 40, 0x000000) // delete road
+            this.scene.add.rectangle(570, 575, 40, 40, 0x000000) // delete road
                 .setInteractive()
                 .on('pointerup', () => this._deleteRoadButtonPressed()),
-            this.scene.add.text(580, 575, 'Del'),
+            this.scene.add.text(570, 575, 'Del'),
             // TODO T intersections, everything is already predisposed just add buttons
         );
         this.scene.cameras.main.ignore(this.hudObjects);
