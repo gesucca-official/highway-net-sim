@@ -48,11 +48,11 @@ export default class HudController {
             this.scene.add.rectangle(470, 575, 40, 40, 0x000000) // build SW curve
                 .setInteractive()
                 .on('pointerup', () => this._drawRoadButtonPressed([CardinalDirection.S, CardinalDirection.W])),
-            this.scene.add.text(470, 575, 'NW'),
+            this.scene.add.text(470, 575, 'SW'),
             this.scene.add.rectangle(515, 575, 40, 40, 0x000000) // build NE curve
                 .setInteractive()
                 .on('pointerup', () => this._drawRoadButtonPressed([CardinalDirection.S, CardinalDirection.E])),
-            this.scene.add.text(515, 575, 'NE'),
+            this.scene.add.text(515, 575, 'SE'),
             this.scene.add.rectangle(570, 575, 40, 40, 0x000000) // delete road
                 .setInteractive()
                 .on('pointerup', () => this._deleteRoadButtonPressed()),
