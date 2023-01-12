@@ -1,5 +1,6 @@
 import HighwayTile from "../models/HighwayTile";
 import {CardinalDirection} from "../models/CardinalDirection";
+import MainScene from "../scenes/MainScene";
 
 export default class HighwayNetController {
 
@@ -18,25 +19,65 @@ export default class HighwayNetController {
         const res: Phaser.GameObjects.GameObject[] = [];
         this._highwayNetwork.forEach(h => {
             if (h.graphicObj !== null)
-                res.push(h.graphicObj);
+                res.push(...h.graphicObj);
         });
         return res;
     }
 
     public add(x: number, y: number, dir: CardinalDirection[]) {
         this._highwayNetwork.push({
-            mapX: x,
-            mapY: y,
+            realGraphicX: x,
+            realGraphicY: y,
             directions: dir,
             lanesQty: 2,
-            graphicObj: null
-        })
+            graphicObj: []
+        });
+    }
+
+    public clear(x: number, y: number) {
+        const toBeDeleted: number[] = [];
+        this._highwayNetwork.forEach((h, index) => {
+            if (h.realGraphicX === x && h.realGraphicY === y) {
+                h.graphicObj.forEach(o => o.destroy());
+                toBeDeleted.push(index);
+            }
+        });
+        toBeDeleted.forEach(tbd => delete this._highwayNetwork[tbd]);
     }
 
     public draw() {
         this._highwayNetwork.forEach(h => {
-            if (h.graphicObj == null)
-                console.log('draw this');
+            if (h.graphicObj.length == 0) {
+                const res = MainScene.TILE_RES_PX;
+                h.directions.forEach(d => {
+                    switch (d) {
+                        case CardinalDirection.N:
+                            h.graphicObj.push(this.scene.add.rectangle(
+                                h.realGraphicX + (res / 2),
+                                h.realGraphicY + (res / 4),
+                                res / 6, res / 2, 0x242424));
+                            break;
+                        case CardinalDirection.S:
+                            h.graphicObj.push(this.scene.add.rectangle(
+                                h.realGraphicX + (res / 2),
+                                h.realGraphicY + (res * 0.75),
+                                res / 6, res / 2, 0x242424));
+                            break;
+                        case CardinalDirection.W:
+                            h.graphicObj.push(this.scene.add.rectangle(
+                                h.realGraphicX + (res / 4),
+                                h.realGraphicY + (res / 2),
+                                res / 2, res / 6, 0x242424));
+                            break;
+                        case CardinalDirection.E:
+                            h.graphicObj.push(this.scene.add.rectangle(
+                                h.realGraphicX + (res * 0.75),
+                                h.realGraphicY + (res / 2),
+                                res / 2, res / 6, 0x242424));
+                            break;
+                    }
+                });
+            }
         });
     }
 }
