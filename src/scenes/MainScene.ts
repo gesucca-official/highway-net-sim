@@ -27,7 +27,8 @@ export default class MainScene extends Phaser.Scene {
                 ...this.highwayNetController.highwayNetworkGraphicObjs,
                 ...this.vehicleController.vehicleObjects],
             this.mapController,
-            this.highwayNetController);
+            this.highwayNetController,
+            this.vehicleController);
     }
 
     preload(): void {

@@ -22,6 +22,8 @@ export default class MapController {
     public create() {
         map0.forEach((line, lineIndex) => {
             line.forEach((tile, tileIndex) => {
+                if (tile == 'E')
+                    this._createMonoChromeTile(tileIndex, lineIndex, 0x777777);
                 if (tile == 'p')
                     this._createMonoChromeTile(tileIndex, lineIndex, 0x7dcea0);
                 if (tile == 'h')
