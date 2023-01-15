@@ -136,6 +136,6 @@ export default class HudController {
     }
 
     private _playButtonPressed() {
-        this.vehicleController.create();
+        this.vehicleController.spawnVehicles();
     }
 }

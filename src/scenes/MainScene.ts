@@ -20,7 +20,7 @@ export default class MainScene extends Phaser.Scene {
         super('main-scenes');
         this.mapController = new MapController(this);
         this.highwayNetController = new HighwayNetController(this);
-        this.vehicleController = new VehicleController(this);
+        this.vehicleController = new VehicleController(this, () => this.highwayNetController.highwayNetwork);
         this.hudController = new HudController(this,
             () => [
                 ...this.mapController.mapObjects,
