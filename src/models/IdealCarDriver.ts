@@ -1,6 +1,7 @@
 import Vehicle from "./Vehicle";
 import Phaser from "phaser";
 import HighwayTile from "./HighwayTile";
+import HighwayNetController from "../ctrls/HighwayNetController";
 
 export default class IdealCarDriver extends Vehicle {
 
@@ -10,7 +11,8 @@ export default class IdealCarDriver extends Vehicle {
                 getCurrentTile: (pos: [number, number]) => HighwayTile,
                 scene: Phaser.Scene) {
         super(start, dest, getCurrentTile, 10, 130);
-        this.obj = scene.add.circle(start[0], start[1], 5, 0x101099);
+        this.obj = scene.add.circle(start[0], start[1], HighwayNetController.LANE_WIDTH / 2, 0x6060FF)
+            .setDepth(100);
     }
 
     getGraphObj(): Phaser.GameObjects.GameObject {

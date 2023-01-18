@@ -5,6 +5,7 @@ import {getCookie, setCookie} from "../utils/Cookies";
 
 export default class HighwayNetController {
 
+    public static readonly LANE_WIDTH = 6;
     private readonly scene: Phaser.Scene;
     private readonly _highwayNetwork: HighwayTile[] = [];
 
@@ -62,33 +63,43 @@ export default class HighwayNetController {
                     switch (d) {
                         case CardinalDirection.N:
                             h.graphicObj.push(this.scene.add.rectangle(
-                                h.realGraphicX + (res / 2),
-                                h.realGraphicY + (res / 4),
-                                res / 6, res / 2, 0x242424));
+                                    h.realGraphicX + (res / 2),
+                                    h.realGraphicY,
+                                    HighwayNetController.LANE_WIDTH * h.lanesQty * 2,
+                                    res / 2 + HighwayNetController.LANE_WIDTH * h.lanesQty,
+                                    0x242424).setOrigin(0.5, 0),
+                                this.scene.add.rectangle(h.realGraphicX + (res / 2), h.realGraphicY, 1, res / 2, 0xFFFFFF).setOrigin(0.5, 0).setDepth(10)
+                            );
                             break;
                         case CardinalDirection.S:
                             h.graphicObj.push(this.scene.add.rectangle(
-                                h.realGraphicX + (res / 2),
-                                h.realGraphicY + (res * 0.75),
-                                res / 6, res / 2, 0x242424));
+                                    h.realGraphicX + (res / 2),
+                                    h.realGraphicY + (res / 2 - HighwayNetController.LANE_WIDTH * h.lanesQty),
+                                    HighwayNetController.LANE_WIDTH * h.lanesQty * 2,
+                                    res / 2 + HighwayNetController.LANE_WIDTH * h.lanesQty,
+                                    0x242424).setOrigin(0.5, 0),
+                                this.scene.add.rectangle(h.realGraphicX + (res / 2), h.realGraphicY + (res / 2), 1, res / 2, 0xFFFFFF).setOrigin(0.5, 0).setDepth(10)
+                            );
                             break;
                         case CardinalDirection.W:
                             h.graphicObj.push(this.scene.add.rectangle(
-                                h.realGraphicX + (res / 4),
-                                h.realGraphicY + (res / 2),
-                                res / 2, res / 6, 0x242424));
+                                    h.realGraphicX + (res / 4),
+                                    h.realGraphicY + (res / 2),
+                                    res / 2, HighwayNetController.LANE_WIDTH * h.lanesQty * 2, 0x242424),
+                                this.scene.add.rectangle(h.realGraphicX, h.realGraphicY + (res / 2), res / 2, 1, 0xFFFFFF).setOrigin(0, 0.5).setDepth(10));
                             break;
                         case CardinalDirection.E:
                             h.graphicObj.push(this.scene.add.rectangle(
-                                h.realGraphicX + (res * 0.75),
-                                h.realGraphicY + (res / 2),
-                                res / 2, res / 6, 0x242424));
+                                    h.realGraphicX + (res * 0.75),
+                                    h.realGraphicY + (res / 2),
+                                    res / 2, HighwayNetController.LANE_WIDTH * h.lanesQty * 2, 0x242424),
+                                this.scene.add.rectangle(h.realGraphicX + (res / 2), h.realGraphicY + (res / 2), res / 2, 1, 0xFFFFFF).setOrigin(0, 0.5).setDepth(10));
                             break;
                     }
                 });
             }
         });
-        this._saveHighwayNet()
+        this._saveHighwayNet();
     }
 
     private _saveHighwayNet() {
