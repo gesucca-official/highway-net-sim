@@ -55,69 +55,30 @@ export default abstract class Vehicle {
 
         // simple turn
         if (tile.directions.length == 2) {
-            let targetDir;
-            switch (this.dir) {
-                case CardinalDirection.N:
-                case CardinalDirection.S:
-                    if (tile.directions.includes(CardinalDirection.N) && tile.directions.includes(CardinalDirection.S))
-                        return; // no need to turn if road is straight
-                    targetDir = tile.directions[0] !== CardinalDirection.N && tile.directions[0] !== CardinalDirection.S
-                        ? tile.directions[0] : tile.directions[1];
-                    break;
-                case CardinalDirection.E:
-                case CardinalDirection.W:
-                    if (tile.directions.includes(CardinalDirection.E) && tile.directions.includes(CardinalDirection.W))
-                        return; // same
-                    targetDir = tile.directions[0] !== CardinalDirection.E && tile.directions[0] !== CardinalDirection.W
-                        ? tile.directions[0] : tile.directions[1];
-            }
+            let targetDir = this._inferTargetDir(tile);
+            if (targetDir === null)
+                return;
             let turnHappens = false;
-            // TODO mega refactoring come onnnnnn
+            const threshold = this._calcThresholdForTurning(targetDir, tile);
             switch (targetDir) {
                 case CardinalDirection.N:
-                    const tns = this.getCurrentTile(this.pos).realGraphicX + MainScene.TILE_RES_PX / 2;
-                    if (this.dir === CardinalDirection.W && this.pos[0] <= tns + this._applyLaneOffset(tile, false)) {
-                        this.pos[0] = tns + this._applyLaneOffset(tile, false);
-                        turnHappens = true;
-                    }
-                    if (this.dir === CardinalDirection.E && this.pos[0] >= tns + this._applyLaneOffset(tile, false)) {
-                        this.pos[0] = tns + this._applyLaneOffset(tile, false);
-                        turnHappens = true;
-                    }
-                    break;
                 case CardinalDirection.S:
-                    const tn = this.getCurrentTile(this.pos).realGraphicX + MainScene.TILE_RES_PX / 2;
-                    if (this.dir === CardinalDirection.W && this.pos[0] <= tn - this._applyLaneOffset(tile, false)) {
-                        this.pos[0] = tn - this._applyLaneOffset(tile, false);
-                        turnHappens = true;
-                    }
-                    if (this.dir === CardinalDirection.E && this.pos[0] >= tn - this._applyLaneOffset(tile, false)) {
-                        this.pos[0] = tn - this._applyLaneOffset(tile, false);
+                    if ((this.dir === CardinalDirection.W && this.pos[0] <= threshold)
+                        || (this.dir === CardinalDirection.E && this.pos[0] >= threshold)) {
+                        this.pos[0] = threshold;
                         turnHappens = true;
                     }
                     break;
                 case CardinalDirection.E:
-                    const tee = this.getCurrentTile(this.pos).realGraphicY + MainScene.TILE_RES_PX / 2;
-                    if (this.dir === CardinalDirection.S && this.pos[1] >= tee + this._applyLaneOffset(tile, false)) {
-                        this.pos[1] = tee + this._applyLaneOffset(tile, false);
-                        turnHappens = true;
-                    }
-                    if (this.dir === CardinalDirection.N && this.pos[1] <= tee + this._applyLaneOffset(tile, false)) {
-                        this.pos[1] = tee + this._applyLaneOffset(tile, false);
-                        turnHappens = true;
-                    }
-                    break;
                 case CardinalDirection.W:
-                    const te = this.getCurrentTile(this.pos).realGraphicY + MainScene.TILE_RES_PX / 2;
-                    if (this.dir === CardinalDirection.S && this.pos[1] >= te - this._applyLaneOffset(tile, false)) {
-                        this.pos[1] = te - this._applyLaneOffset(tile, false);
-                        turnHappens = true;
-                    }
-                    if (this.dir === CardinalDirection.N && this.pos[1] <= te - this._applyLaneOffset(tile, false)) {
-                        this.pos[1] = te - this._applyLaneOffset(tile, false);
+                    if ((this.dir === CardinalDirection.S && this.pos[1] >= threshold)
+                        || (this.dir === CardinalDirection.N && this.pos[1] <= threshold)) {
+                        this.pos[1] = threshold;
                         turnHappens = true;
                     }
                     break;
+                case null:
+                    turnHappens = false;
             }
             if (turnHappens) {
                 this.dir = targetDir;
@@ -172,6 +133,39 @@ export default abstract class Vehicle {
                 break;
         }
         return offset;
+    }
+
+    private _inferTargetDir(tile: HighwayTile): CardinalDirection | null {
+        let targetDir;
+        switch (this.dir) {
+            case CardinalDirection.N:
+            case CardinalDirection.S:
+                if (tile.directions.includes(CardinalDirection.N) && tile.directions.includes(CardinalDirection.S))
+                    return null; // no need to turn if road is straight
+                targetDir = tile.directions[0] !== CardinalDirection.N && tile.directions[0] !== CardinalDirection.S
+                    ? tile.directions[0] : tile.directions[1];
+                break;
+            case CardinalDirection.E:
+            case CardinalDirection.W:
+                if (tile.directions.includes(CardinalDirection.E) && tile.directions.includes(CardinalDirection.W))
+                    return null; // same
+                targetDir = tile.directions[0] !== CardinalDirection.E && tile.directions[0] !== CardinalDirection.W
+                    ? tile.directions[0] : tile.directions[1];
+        }
+        return targetDir;
+    }
+
+    private _calcThresholdForTurning(targetDir: CardinalDirection, tile: HighwayTile): number {
+        switch (targetDir) {
+            case CardinalDirection.N:
+                return this.getCurrentTile(this.pos).realGraphicX + MainScene.TILE_RES_PX / 2 + this._applyLaneOffset(tile, false);
+            case CardinalDirection.S:
+                return this.getCurrentTile(this.pos).realGraphicX + MainScene.TILE_RES_PX / 2 - this._applyLaneOffset(tile, false);
+            case CardinalDirection.E:
+                return this.getCurrentTile(this.pos).realGraphicY + MainScene.TILE_RES_PX / 2 + this._applyLaneOffset(tile, false);
+            case CardinalDirection.W:
+                return this.getCurrentTile(this.pos).realGraphicY + MainScene.TILE_RES_PX / 2 - this._applyLaneOffset(tile, false);
+        }
     }
 
     public abstract getGraphObj(): Phaser.GameObjects.GameObject;
