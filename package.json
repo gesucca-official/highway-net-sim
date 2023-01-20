@@ -12,8 +12,11 @@
     "phaser": "^3.55.2"
   },
   "devDependencies": {
+    "assert": "^2.0.0",
+    "console-browserify": "^1.2.0",
     "parcel": "^2.8.2",
     "parcel-reporter-static-files-copy": "^1.5.0",
-    "typescript": "^4.9.4"
+    "typescript": "^4.9.4",
+    "util": "^0.12.5"
   }
 }

@@ -2,6 +2,7 @@ import IdealCarDriver from "../models/IdealCarDriver";
 import Vehicle from "../models/Vehicle";
 import MainScene from "../scenes/MainScene";
 import HighwayTile from "../models/HighwayTile";
+import SlowCarDriver from "../models/SlowCarDriver";
 
 export default class VehicleController {
 
@@ -23,18 +24,39 @@ export default class VehicleController {
 
     public spawnVehicles() {
         const res = MainScene.TILE_RES_PX;
-        this._vehicleObjects.push(
+        setTimeout(() => this._vehicleObjects.push(
             new IdealCarDriver(
                 [14 * res + res / 2, 33 * res + res / 2],
                 [0, 0],
                 (pos: [number, number]) => this.fetchVehiclePos(pos[0], pos[1]),
-                this.scene)
+                this.scene),
+            new IdealCarDriver(
+                [14 * res + res / 2, 36 * res + res / 2],
+                [0, 0],
+                (pos: [number, number]) => this.fetchVehiclePos(pos[0], pos[1]),
+                this.scene),
+        ), 5000);
+        this._vehicleObjects.push(
+            new SlowCarDriver(
+                [14 * res + res / 2, 33 * res + res / 2],
+                [0, 0],
+                (pos: [number, number]) => this.fetchVehiclePos(pos[0], pos[1]),
+                this.scene),
         );
     }
 
     public update(time: number, delta: number) {
         this._vehicleObjects.forEach(
-            v => v.update(time, delta)
+            (v, i) => {
+                this._vehicleObjects.forEach((ov, o) => {
+                    if (i != o && Phaser.Geom.Intersects.CircleToCircle(v.getGraphBoundary(), ov.getGraphBoundary())
+                        && v.lane === ov.lane && v.dir == ov.dir) {
+                        v.aboutToCrashInto(ov, delta);
+                        ov.aboutToCrashInto(v, delta)
+                    }
+                })
+                v.update(time, delta);
+            }
         );
     }
 
