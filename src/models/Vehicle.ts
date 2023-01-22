@@ -10,6 +10,8 @@ export default abstract class Vehicle {
     protected pos: [number, number];
     protected dest: [number, number];
 
+    public id: string = (Date.now() * Math.random()).toString();
+
     public dir: CardinalDirection | null = null;
     public lane: number = 0;
     private changingLane: number = 0;
@@ -19,6 +21,7 @@ export default abstract class Vehicle {
     private readonly maxSpeed: number;
 
     private turnedOnTile: [number, number] = [0, 0];
+    private checkForCrashes: Map<string, Vehicle> = new Map<string, Vehicle>();
 
     private readonly getCurrentTile: (pos: [number, number]) => HighwayTile;
 
@@ -35,10 +38,8 @@ export default abstract class Vehicle {
     public update(time: number, delta: number) {
         const tile = this.getCurrentTile(this.pos);
         this._decideDirection(tile);
-        /* if (this.changingLane === 0 && this.lane > 0)
-            this.changingLane--; */
-        if (this.changingLane !== 0)
-            this._overtake(delta);
+        this._decideLane();
+        this._switchLane(delta);
         this._accelerate(delta, 1, 1);
         this._move(delta);
     }
@@ -48,16 +49,18 @@ export default abstract class Vehicle {
         if (this.speed > this.maxSpeed) this.speed = this.maxSpeed;
     }
 
-    public getGraphBoundary(): Phaser.Geom.Circle {
-        // this determines safety distance
+    public getSafetyBoundary(): Phaser.Geom.Circle {
         return new Circle(this.pos[0], this.pos[1], HighwayNetController.LANE_WIDTH);
+    }
+
+    public getCrashBoundary(): Phaser.Geom.Circle {
+        return new Circle(this.pos[0], this.pos[1], HighwayNetController.LANE_WIDTH / 2);
     }
 
     public aboutToCrashInto(other: Vehicle, delta: number) {
         if (this.speed > other.speed && this.maxSpeed >= other.maxSpeed) {
-            this._accelerate(delta, -1, 2);
-            if (this.changingLane === 0 && this.lane <= this.getCurrentTile(this.pos).lanesQty)
-                this.changingLane++;
+            this.checkForCrashes.set(other.id, other);
+            this._accelerate(delta, -1, 2); // brake
         }
     }
 
@@ -189,43 +192,43 @@ export default abstract class Vehicle {
 
     public abstract getGraphObj(): Phaser.GameObjects.GameObject;
 
-    private _overtake(delta: number) {
+    private _switchLane(delta: number) {
         // TODO refactor this mess, and this whole class tbh
-        const movement = ((this.speed * 0.2778) * (delta / 1000)) / 10 * VehicleController.FAST_FORWARD_FACTOR / 2 as integer;
-        if (this.dir === null)
+        const movement = ((this.speed * 0.2778) * (delta / 1000)) / 10 * VehicleController.FAST_FORWARD_FACTOR / 4 as integer;
+        if (this.dir === null || this.changingLane === 0)
             return;
         switch (this.dir) {
             case CardinalDirection.N:
-                this.pos[0] -= movement;
+                this.pos[0] -= movement * this.changingLane;
                 const tn = this.getCurrentTile(this.pos).realGraphicX + MainScene.TILE_RES_PX / 2 + this._calcLaneOffset(this.getCurrentTile(this.pos), false);
-                if (this.pos[0] <= tn) {
+                if ((this.changingLane > 0 && this.pos[0] <= tn) || (this.changingLane < 0 && this.pos[0] >= tn)) {
                     this.pos[0] = tn;
                     this.lane += this.changingLane;
                     this.changingLane = 0;
                 }
                 break;
             case CardinalDirection.S:
-                this.pos[0] += movement;
+                this.pos[0] += movement * this.changingLane;
                 const ts = this.getCurrentTile(this.pos).realGraphicX + MainScene.TILE_RES_PX / 2 - this._calcLaneOffset(this.getCurrentTile(this.pos), false);
-                if (this.pos[0] >= ts) {
+                if ((this.changingLane > 0 && this.pos[0] >= ts) || (this.changingLane < 0 && this.pos[0] <= ts)) {
                     this.pos[0] = ts;
                     this.lane += this.changingLane;
                     this.changingLane = 0;
                 }
                 break;
             case CardinalDirection.E:
-                this.pos[1] -= movement;
+                this.pos[1] -= movement * this.changingLane;
                 const te = this.getCurrentTile(this.pos).realGraphicY + MainScene.TILE_RES_PX / 2 + this._calcLaneOffset(this.getCurrentTile(this.pos), false);
-                if (this.pos[1] <= te) {
+                if ((this.changingLane > 0 && this.pos[1] <= te) || (this.changingLane < 0 && this.pos[1] >= te)) {
                     this.pos[1] = te;
                     this.lane += this.changingLane;
                     this.changingLane = 0;
                 }
                 break;
             case CardinalDirection.W:
-                this.pos[1] += movement;
+                this.pos[1] += movement * this.changingLane;
                 const tw = this.getCurrentTile(this.pos).realGraphicY + MainScene.TILE_RES_PX / 2 - this._calcLaneOffset(this.getCurrentTile(this.pos), false);
-                if (this.pos[1] >= tw) {
+                if ((this.changingLane > 0 && this.pos[1] >= tw) || (this.changingLane < 0 && this.pos[1] <= tw)) {
                     this.pos[1] = tw;
                     this.lane += this.changingLane;
                     this.changingLane = 0;
@@ -236,5 +239,19 @@ export default abstract class Vehicle {
         // @ts-ignore
         this.getGraphObj().y = this.pos[1];
 
+    }
+
+    private _decideLane() {
+        const itemsToRemove: string[] = [];
+        this.checkForCrashes.forEach(v => {
+            const intersects = Phaser.Geom.Intersects.CircleToCircle(v.getSafetyBoundary(), this.getSafetyBoundary());
+            if (intersects && this.changingLane === 0 && (v.lane === this.lane || v.lane === this.lane + this.changingLane) && this.lane < this.getCurrentTile(this.pos).lanesQty)
+                this.changingLane++;
+            if (!intersects)
+                itemsToRemove.push(v.id);
+        });
+        itemsToRemove.forEach(id => this.checkForCrashes.delete(id));
+        if (this.checkForCrashes.size == 0 && this.changingLane === 0 && this.lane > 0)
+            this.changingLane--;
     }
 }

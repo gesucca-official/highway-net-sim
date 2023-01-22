@@ -9,9 +9,9 @@ export default class VehicleController {
     public static FAST_FORWARD_FACTOR = 10;
 
     private readonly scene: Phaser.Scene;
-    private readonly _vehicleObjects: Vehicle[] = [];
-
     private readonly getHighwayNetwork: () => HighwayTile[];
+
+    private _vehicleObjects: Vehicle[] = [];
 
     constructor(scene: Phaser.Scene, getHighwayNetwork: () => HighwayTile[]) {
         this.scene = scene;
@@ -23,19 +23,21 @@ export default class VehicleController {
     }
 
     public spawnVehicles() {
+    }
+
+    public DEBUG_spawnFastDriver() {
         const res = MainScene.TILE_RES_PX;
-        setTimeout(() => this._vehicleObjects.push(
+        this._vehicleObjects.push(
             new IdealCarDriver(
                 [14 * res + res / 2, 33 * res + res / 2],
                 [0, 0],
                 (pos: [number, number]) => this.fetchVehiclePos(pos[0], pos[1]),
-                this.scene),
-            new IdealCarDriver(
-                [14 * res + res / 2, 36 * res + res / 2],
-                [0, 0],
-                (pos: [number, number]) => this.fetchVehiclePos(pos[0], pos[1]),
-                this.scene),
-        ), 5000);
+                this.scene)
+        );
+    }
+
+    public DEBUG_spawnSlowDriver() {
+        const res = MainScene.TILE_RES_PX;
         this._vehicleObjects.push(
             new SlowCarDriver(
                 [14 * res + res / 2, 33 * res + res / 2],
@@ -49,15 +51,23 @@ export default class VehicleController {
         this._vehicleObjects.forEach(
             (v, i) => {
                 this._vehicleObjects.forEach((ov, o) => {
-                    if (i != o && Phaser.Geom.Intersects.CircleToCircle(v.getGraphBoundary(), ov.getGraphBoundary())
+                    if (i != o && Phaser.Geom.Intersects.CircleToCircle(v.getSafetyBoundary(), ov.getSafetyBoundary())
                         && v.lane === ov.lane && v.dir == ov.dir) {
                         v.aboutToCrashInto(ov, delta);
                         ov.aboutToCrashInto(v, delta)
+                    }
+                    if (i != o && Phaser.Geom.Intersects.CircleToCircle(v.getCrashBoundary(), ov.getCrashBoundary())) {
+                        v.getGraphObj().destroy();
+                        ov.getGraphObj().destroy();
+                        v.id = 'kill me';
+                        ov.id = 'kill me'
+                        console.log('Incident!');
                     }
                 })
                 v.update(time, delta);
             }
         );
+        this._vehicleObjects = this._vehicleObjects.filter(v => v.id !== 'kill me');
     }
 
     private fetchVehiclePos(x: number, y: number): HighwayTile {

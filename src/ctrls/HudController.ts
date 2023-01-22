@@ -32,12 +32,16 @@ export default class HudController {
 
         // TODO rethink interface and refactor this method, this is starting to become unsustainable
 
-        // play button
+        // spawn vehicle buttons
         this.hudObjects.push(
             this.scene.add.rectangle(760, 30, 40, 40, 0x000000) // play button
                 .setInteractive()
-                .on('pointerup', () => this._playButtonPressed()),
-            this.scene.add.text(745, 30, 'ply')
+                .on('pointerup', () => this.vehicleController.DEBUG_spawnFastDriver()),
+            this.scene.add.text(745, 30, 'p F'),
+            this.scene.add.rectangle(760, 80, 40, 40, 0x000000) // play button
+                .setInteractive()
+                .on('pointerup', () => this.vehicleController.DEBUG_spawnSlowDriver()),
+            this.scene.add.text(745, 80, 'p S')
         );
 
         // lower bar
