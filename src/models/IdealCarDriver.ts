@@ -10,7 +10,7 @@ export default class IdealCarDriver extends Vehicle {
     constructor(start: [number, number], dest: [number, number],
                 getCurrentTile: (pos: [number, number]) => HighwayTile,
                 scene: Phaser.Scene) {
-        super(start, dest, getCurrentTile, 10, 130);
+        super(start, dest, getCurrentTile, 30, 130);
         this.obj = scene.add.circle(start[0], start[1], HighwayNetController.LANE_WIDTH / 2, 0x6060FF)
             .setDepth(100);
     }

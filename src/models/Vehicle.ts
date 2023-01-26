@@ -40,7 +40,10 @@ export default abstract class Vehicle {
         this._decideDirection(tile);
         this._decideLane();
         this._switchLane(delta);
-        this._accelerate(delta, 1, 1);
+        const limit = this.getCurrentTile(this.pos).terrainSpeedLimit;
+        if (this.speed <= limit)
+            this._accelerate(delta, 1, 1);
+        else this._accelerate(delta, -1, 2)
         this._move(delta);
     }
 

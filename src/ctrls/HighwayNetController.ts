@@ -1,3 +1,4 @@
+import {map0} from "../maps/map0"
 import HighwayTile from "../models/HighwayTile";
 import {CardinalDirection} from "../models/CardinalDirection";
 import MainScene from "../scenes/MainScene";
@@ -34,13 +35,33 @@ export default class HighwayNetController {
     }
 
     public add(x: number, y: number, dir: CardinalDirection[]) {
-        this._highwayNetwork.push({
+        const mapTile = map0[y / MainScene.TILE_RES_PX][x / MainScene.TILE_RES_PX];
+        // speed limits for cities, hills, mountains and bridges over rivers
+        const road = {
             realGraphicX: x,
             realGraphicY: y,
             directions: dir,
             lanesQty: 2,
-            graphicObj: []
-        });
+            graphicObj: [],
+            terrainSpeedLimit: -1
+        };
+        switch (mapTile) {
+            case 'E':
+                road.terrainSpeedLimit = 50;
+                break;
+            case 'c':
+                road.terrainSpeedLimit = 90
+                break;
+            case 'h':
+                road.terrainSpeedLimit = 110;
+                break;
+            case 'm':
+                road.terrainSpeedLimit = 80;
+                break;
+            default:
+                road.terrainSpeedLimit = 130;
+        }
+        this._highwayNetwork.push(road);
     }
 
     public clear(x: number, y: number) {

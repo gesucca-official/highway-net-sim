@@ -82,7 +82,8 @@ export default class VehicleController {
             realGraphicY: 0,
             directions: [],
             lanesQty: 0,
-            graphicObj: []
+            graphicObj: [],
+            terrainSpeedLimit: -1
         }
     }
 }
